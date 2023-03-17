@@ -1,92 +1,100 @@
-// import flatpickr from 'flatpickr';
-// import { Report } from 'notiflix/build/notiflix-report-aio';
-// import 'flatpickr/dist/flatpickr.min.css';
+import flatpickr from 'flatpickr';
+import { Report } from 'notiflix/build/notiflix-report-aio';
+import 'flatpickr/dist/flatpickr.min.css';
 
-// let offerTime;
+const ref = {
+  input: document.querySelector('#datetime-picker'),
+  start: document.querySelector('[data-start]'),
+  days: document.querySelector('[data-days]'),
+  hours: document.querySelector('[data-hours]'),
+  minutes: document.querySelector('[data-minutes]'),
+  seconds: document.querySelector('[data-seconds]'),
+};
 
-// const ref = {
-//   input: document.querySelector('#datetime-picker'),
-//   start: document.querySelector('[data-start]'),
-//   days: document.querySelector('[data-days]'),
-//   hours: document.querySelector('[data-hours]'),
-//   minutes: document.querySelector('[data-minutes]'),
-//   seconds: document.querySelector('[data-seconds]'),
-// };
+let offerTime;
+let intervalId = null;
+let isActive = false;
 
-// ref.start.setAttribute('disabled', '');
-// ref.start.addEventListener('click', () => {
-//   timer.start(offerTime);
-// });
+ref.start.disabled = true;
 
-// const options = {
-//   enableTime: true,
-//   time_24hr: true,
-//   defaultDate: new Date(),
-//   minuteIncrement: 1,
-//   onClose(selectedDates) {
-//     offerTime = selectedDates[0];
-//     if (selectedDates[0] < options.defaultDate) {
-//       ref.start.setAttribute('disabled', '');
-//       Report.failure('Fail', '"Please choose a date in the future');
-//     } else {
-//       ref.start.removeAttribute('disabled');
-//     }
-//   },
-// };
+ref.start.addEventListener('click', () => {
+  startTimer(offerTime);
+});
 
-// const timer = {
-//   intervalId: null,
-//   isActive: false,
+const options = {
+  enableTime: true,
+  time_24hr: true,
+  defaultDate: new Date(),
+  minuteIncrement: 1,
+  onClose(selectedDates) {
+    offerTime = selectedDates[0];
+    if (selectedDates[0] < options.defaultDate) {
+      ref.start.disabled = true;
+      Report.failure('Fail', 'Please choose a date in the future');
+    } else {
+      ref.start.disabled = false;
+    }
+  },
+};
 
-//   start() {
-//     const currentTime = Date.now();
-//     ref.input.setAttribute('disabled', '');
-//     ref.start.setAttribute('disabled', '');
-//     this.intervalId = setInterval(() => {
-//       const currentTime = Date.now();
-//       const { days, hours, minutes, seconds } = timer.convertMs(
-//         offerTime - currentTime
-//       );
-//       if (currentTime >= offerTime) {
-//         Report.success('Success', 'Timer is over', 'Okay');
-//         this.stop();
-//         return;
-//       }
-//       ref.days.textContent = days;
-//       ref.hours.textContent = hours;
-//       ref.minutes.textContent = minutes;
-//       ref.seconds.textContent = seconds;
-//     }, 1000);
-//   },
+const startTimer = offerTime => {
+  ref.input.disabled = true;
+  ref.start.disabled = true;
+  isActive = true;
 
-//   stop() {
-//     clearInterval(this.intervalId);
-//   },
+  intervalId = setInterval(() => {
+    const currentTime = Date.now();
+    const timeLeft = offerTime - currentTime;
 
-//   pad(value) {
-//     return String(value.toString().padStart(2, '0'));
-//   },
+    if (timeLeft < 0) {
+      clearInterval(intervalId);
+      isActive = false;
+      Report.success('Success', 'Timer is over', 'Okay');
+      return;
+    }
 
-//   convertMs(ms) {
-//     // Milliseconds per unit of time
-//     const second = 1000;
-//     const minute = second * 60;
-//     const hour = minute * 60;
-//     const day = hour * 24;
+    const { days, hours, minutes, seconds } = convertMs(timeLeft);
 
-//     // The rest of the days
-//     const days = this.pad(Math.floor(ms / day));
-//     // The rest of the days
-//     const hours = this.pad(Math.floor((ms % day) / hour));
-//     // The rest of the days
-//     const minutes = this.pad(Math.floor(((ms % day) % hour) / minute));
-//     // The rest of the days
-//     const seconds = this.pad(
-//       Math.floor((((ms % day) % hour) % minute) / second)
-//     );
+    ref.days.textContent = days;
+    ref.hours.textContent = hours;
+    ref.minutes.textContent = minutes;
+    ref.seconds.textContent = seconds;
+  }, 1000);
+};
 
-//     return { days, hours, minutes, seconds };
-//   },
-// };
+const stopTimer = () => {
+  clearInterval(intervalId);
+  isActive = false;
+};
 
-// const fp = flatpickr(ref.input, options);
+// Milliseconds per unit of time
+const convertMs = ms => {
+  const second = 1000;
+  const minute = second * 60;
+  const hour = minute * 60;
+  const day = hour * 24;
+
+  // Remaining days
+  const days = Math.floor(ms / day)
+    .toString()
+    .padStart(2, '0');
+
+  // Remaining hours
+  const hours = Math.floor((ms % day) / hour)
+    .toString()
+    .padStart(2, '0');
+
+  // Remaining minutes
+  const minutes = Math.floor(((ms % day) % hour) / minute)
+    .toString()
+    .padStart(2, '0');
+
+  // Remaining seconds
+  const seconds = Math.floor((((ms % day) % hour) % minute) / second)
+    .toString()
+    .padStart(2, '0');
+
+  return { days, hours, minutes, seconds };
+};
+
+flatpickr(ref.input, options);
