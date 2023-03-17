@@ -8,27 +8,7 @@
 //   delay: document.querySelector('input[name="delay"]'),
 // };
 
-// ref.form.addEventListener('submit', event => {
-//   event.preventDefault();
-//   const {
-//     elements: { amount, step, delay },
-//   } = event.currentTarget;
-//   let numDelay = Number(delay.value);
-
-//   for (let i = 1; i <= amount.value; i++) {
-//     createPromise(i, numDelay)
-//       .then(({ position, delay }) => {
-//         Notify.success(`✅ Fulfilled promise ${position} in ${delay}ms`);
-//       })
-//       .catch(({ position, delay }) => {
-//         Notify.failure(`❌ Rejected promise ${position} in ${delay}ms`);
-//       });
-//     numDelay += Number(step.value);
-//   }
-// });
-
-// // Function submitForm
-// function createPromise(position, delay) {
+// const createPromise = (position, delay) => {
 //   const shouldResolve = Math.random() > 0.3;
 
 //   return new Promise((resolve, reject) => {
@@ -40,4 +20,26 @@
 //       }
 //     }, delay);
 //   });
-// }
+// };
+
+// const handleSubmit = async event => {
+//   event.preventDefault();
+//   const { amount, step, delay } = ref;
+//   let numDelay = Number(delay.value);
+
+//   for (let i = 1; i <= amount.value; i++) {
+//     try {
+//       const result = await createPromise(i, numDelay);
+//       Notify.success(
+//         `✅ Fulfilled promise ${result.position} in ${result.delay}ms`
+//       );
+//     } catch (error) {
+//       Notify.failure(
+//         `❌ Rejected promise ${error.position} in ${error.delay}ms`
+//       );
+//     }
+//     numDelay += Number(step.value);
+//   }
+// };
+
+// ref.form.addEventListener('submit', handleSubmit);
