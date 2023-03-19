@@ -50,6 +50,7 @@ const startTimer = offerTime => {
       clearInterval(intervalId);
       isActive = false;
       Report.success('Success', 'Timer is over', 'Okay');
+      ref.input.disabled = false;
       return;
     }
 
@@ -64,6 +65,8 @@ const startTimer = offerTime => {
 
 const stopTimer = () => {
   clearInterval(intervalId);
+  ref.input.removeAttribute('disabled');
+  ref.start.removeAttribute('disabled');
   isActive = false;
 };
 
